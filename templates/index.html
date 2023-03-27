@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!--FROM MAPBOX GL JS-->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
+    <title>Mapbox</title>
+</head>
+<body>
+    <h1>MapBox API in Django</h1>
+
+    
+    <form method="POST">
+        {% csrf_token %}
+        Input Address: <input type="text" name="address" value="Jollibee, Balingasag"/>
+        <input type="submit">
+    </form>
+
+    <!--Using objects in database-->
+    <div id="add" style="display:none;">
+        {% for address in Addresses %}
+            <p>{{address.address}}</p>
+        {% endfor %}
+    </div>
+
+    <div id="long" style="display:none;">
+        {% for address in Addresses %}
+            <p>{{address.long}}</p>
+        {% endfor %}
+    </div>
+
+    <div id="lat" style="display:none;">
+        {% for address in Addresses %}
+            <p>{{address.lat}}</p>
+        {% endfor %}
+    </div>
+    <!--End Database access-->
+
+    <!--Display the map-->
+    <div id='map' style='width: 100%; height: 600px;'></div>
+
+
+    <script>
+    // Configuring the map
+    mapboxgl.accessToken = '{{access_key}}';         // Define this in the views to promote privacy
+    const map = new mapboxgl.Map({
+        container: 'map',                            // container ID
+        style: 'mapbox://styles/mapbox/streets-v12', // style URL
+        center: [124.781360, 8.745833],              // starting position [lng, lat]
+        zoom: 15,                                     // starting zoom
+    });
+
+    // Retrieving Django Variables
+    const add = Array.from(document.getElementById("add").children)
+    const long = Array.from(document.getElementById("long").children)
+    const lat = Array.from(document.getElementById("lat").children)
+    let addresses = []
+
+    for (let i=0; i<long.length; i++) {
+        addresses.push(add[i].textContent)
+        addresses.push(long[i].textContent)
+        addresses.push(lat[i].textContent)
+    }
+
+    // Create markers on the map
+    for (let i=0; i < addresses.length; i+=3) {
+        const marker = new mapboxgl.Marker()
+            .setLngLat([addresses[i+1], addresses[i+2]]) // Places the marker on the specific coordinates (Longitude, Latitude)
+            .setPopup(new mapboxgl.Popup().setHTML(addresses[i])) //Pop-up message when clicked on
+            .addTo(map); // addTo adds to a created map defined above
+    }
+    </script>
+</body>
+</html>
